@@ -12,3 +12,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+exchange-key: ${EXCHANGE_KEY}
