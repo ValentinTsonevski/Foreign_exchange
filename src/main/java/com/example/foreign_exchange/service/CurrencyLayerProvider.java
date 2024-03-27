@@ -1,6 +1,7 @@
 package com.example.foreign_exchange.service;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class CurrencyLayerProvider implements ExchangeRateProvider {
@@ -21,6 +24,7 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
     private static final String BASE_URL = "http://api.currencylayer.com/";
     private static final String EXCHANGE_RATE_ENDPOINT = "live";
     private static final String CURRENCY_CONVERSION_ENDPOINT = "convert";
+    private static final String CONVERSION_HISTORY_ENDPOINT = "historical";
     private static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
 
     @Override
@@ -42,7 +46,6 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
             double rate = exchangeRates.getJSONObject("quotes").getDouble(baseCurrency + targetCurrency);
             stringBuilder.append("1 ").append(baseCurrency).append(" = ").append(rate).append(" ").append(targetCurrency).append("\n");
 
-            response.close();
         } catch (IOException | JSONException e) {
             e.printStackTrace();
             stringBuilder.append("Error fetching exchange rates");
@@ -52,13 +55,13 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
     }
 
     @Override
-    public String getCurrencyConversion(String from, String to, BigDecimal amount) {
-        from = from.toUpperCase();
-        to = to.toUpperCase();
+    public String getCurrencyConversion(String fromCurrency, String toCurrency, BigDecimal amount) {
+        fromCurrency = fromCurrency.toUpperCase();
+        toCurrency = toCurrency.toUpperCase();
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        HttpGet get = new HttpGet(BASE_URL + CURRENCY_CONVERSION_ENDPOINT + "?access_key=" + key + "&from=" + from + "&to=" + to + "&amount=" + amount);
+        HttpGet get = new HttpGet(BASE_URL + CURRENCY_CONVERSION_ENDPOINT + "?access_key=" + key + "&from=" + fromCurrency + "&to=" + toCurrency + "&amount=" + amount);
 
         BigDecimal convertedAmount = BigDecimal.ZERO;
         try {
@@ -74,7 +77,6 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
             stringBuilder.append("Unique transaction identifier: ").append(transactionId)
                     .append("\n").append("Converted amount: ").append(convertedAmount);
 
-            response.close();
         } catch (IOException | JSONException e) {
             e.printStackTrace();
             stringBuilder.append("Error converting currency");
@@ -82,4 +84,63 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
 
         return stringBuilder.toString();
     }
+
+    @Override
+    public String getConversionHistory(String fromCurrency, String toCurrency, double amount, LocalDate transactionDate) {
+        fromCurrency = fromCurrency.toUpperCase();
+        toCurrency = toCurrency.toUpperCase();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String formattedDate = transactionDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        HttpGet get = new HttpGet(BASE_URL + CURRENCY_CONVERSION_ENDPOINT +
+                "?access_key=" + key +
+                "&from=" + fromCurrency +
+                "&to=" + toCurrency +
+                "&amount=" + amount +
+                "&date=" + formattedDate);
+
+        try {
+            CloseableHttpResponse response = HTTP_CLIENT.execute(get);
+            HttpEntity entity = response.getEntity();
+
+            JSONObject conversionData = new JSONObject(EntityUtils.toString(entity));
+
+            boolean success = conversionData.getBoolean("success");
+            if (success) {
+                boolean historical = conversionData.getBoolean("historical");
+                if (historical) {
+                    JSONObject query = conversionData.getJSONObject("query");
+                    double result = conversionData.getDouble("result");
+                    String date = conversionData.getString("date");
+
+                    stringBuilder.append("Conversion from ")
+                            .append(query.getString("from"))
+                            .append(" to ")
+                            .append(query.getString("to"))
+                            .append(" on ")
+                            .append(date)
+                            .append(":\n")
+                            .append(amount)
+                            .append(" ")
+                            .append(query.getString("from"))
+                            .append(" = ")
+                            .append(result)
+                            .append(" ")
+                            .append(query.getString("to"));
+                } else {
+                    stringBuilder.append("Error: Historical conversion data not found.");
+                }
+            } else {
+                stringBuilder.append("Error: Conversion request failed.");
+            }
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            stringBuilder.append("Error fetching conversion history");
+        }
+
+        return stringBuilder.toString();
+    }
+
 }
