@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @AllArgsConstructor
@@ -23,9 +24,19 @@ public class CurrencyController {
     }
 
     @GetMapping("/conversion")
-    public String getCurrencyConversion(@RequestParam("from") String from,
-                                            @RequestParam("to") String to,
-                                            @RequestParam("amount") BigDecimal amount) {
-        return exchangeRateProvider.getCurrencyConversion(from, to, amount);
+    public String getCurrencyConversion(@RequestParam("fromCurrency") String fromCurrency,
+                                        @RequestParam("toCurrency") String toCurrency,
+                                        @RequestParam("amount") BigDecimal amount) {
+        return exchangeRateProvider.getCurrencyConversion(fromCurrency, toCurrency, amount);
+    }
+
+    @GetMapping("/conversion-history")
+    public String getConversionHistory(
+            @RequestParam("fromCurrency") String fromCurrency,
+            @RequestParam("toCurrency") String toCurrency,
+            @RequestParam("amount") double amount,
+            @RequestParam("transactionDate") LocalDate transactionDate
+    ) {
+        return exchangeRateProvider.getConversionHistory(fromCurrency, toCurrency, amount, transactionDate);
     }
 }
