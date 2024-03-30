@@ -34,10 +34,7 @@ public class ExchangeRateValidationService {
         }
     }
 
-
     private boolean isCurrencyCodeInvalid(String currencyCode) {
         return currencyCode == null || currencyCode.trim().isEmpty() || currencyCode.trim().length() != 3;
     }
-
-
 }
