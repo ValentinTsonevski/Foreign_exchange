@@ -3,7 +3,6 @@ package com.example.foreign_exchange.controller;
 import com.example.foreign_exchange.service.ExchangeRateProvider;
 import io.swagger.v3.oas.annotations.Operation;
 
-
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +30,8 @@ public class CurrencyController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Successful operation",
-                            content = @Content(mediaType = "text/plain", examples = @ExampleObject(value = "Currency Exchange Rate from USD to BGN\n1 USD = 1.806733 BGN"))
+                            content = @Content(mediaType = "text/plain",
+                                    examples = @ExampleObject(value = "Currency Exchange Rate from USD to BGN\n1 USD = 1.806733 BGN"))
                     ), @ApiResponse(
                     responseCode = "400",
                     description = "Bad request",
@@ -61,7 +61,7 @@ public class CurrencyController {
                             description = "Successful operation",
                             content = @Content(mediaType = "text/plain",
                                     examples = @ExampleObject(value = "Unique transaction identifier: 2ade2bc6-4b42-47a9-8093-912c2d79ac1a\nConverted amount: 180.7413"))
-                    ),@ApiResponse(
+                    ), @ApiResponse(
                     responseCode = "400",
                     description = "Bad request",
                     content = @Content(mediaType = "text/plain", examples = {
@@ -75,8 +75,8 @@ public class CurrencyController {
     )
     @GetMapping("/conversion")
     public ResponseEntity<String> getCurrencyConversion(@RequestParam("fromCurrency") String fromCurrency,
-                                        @RequestParam("toCurrency") String toCurrency,
-                                        @RequestParam("amount") BigDecimal amount) {
+                                                        @RequestParam("toCurrency") String toCurrency,
+                                                        @RequestParam("amount") BigDecimal amount) {
         try {
             String currencyConversion = exchangeRateProvider.getCurrencyConversion(fromCurrency, toCurrency, amount);
             return ResponseEntity.ok(currencyConversion);
@@ -105,7 +105,7 @@ public class CurrencyController {
                             @ExampleObject(name = "Invalid date",
                                     value = "Invalid date"),
                     }
-            ))
+                    ))
 
             }
     )
@@ -117,7 +117,8 @@ public class CurrencyController {
             @RequestParam("transactionDate") LocalDate transactionDate
     ) {
         try {
-            String conversionHistory = exchangeRateProvider.getConversionHistory(fromCurrency, toCurrency, amount, transactionDate);
+            String conversionHistory = exchangeRateProvider.
+                    getConversionHistory(fromCurrency, toCurrency, amount, transactionDate);
             return ResponseEntity.ok(conversionHistory);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());

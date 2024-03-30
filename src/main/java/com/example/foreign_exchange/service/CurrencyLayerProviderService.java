@@ -1,5 +1,6 @@
 package com.example.foreign_exchange.service;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -8,8 +9,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,16 +17,16 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class CurrencyLayerProvider implements ExchangeRateProvider {
-    @Value("${exchange_key}")
-    private String key;
+@RequiredArgsConstructor
+public class CurrencyLayerProviderService implements ExchangeRateProvider {
+
     private static final String BASE_URL = "http://api.currencylayer.com/";
     private static final String EXCHANGE_RATE_ENDPOINT = "live";
     private static final String CURRENCY_CONVERSION_ENDPOINT = "convert";
     private static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
+    private static final String key = "08d73b13e18e54bba259220599b029b1";
 
-    @Autowired
-    private ExchangeRateValidationService validationService;
+    private final ExchangeRateValidationService validationService;
 
     @Override
     public String getExchangeRate(String baseCurrency, String targetCurrency) {
@@ -88,7 +87,8 @@ public class CurrencyLayerProvider implements ExchangeRateProvider {
 
             String transactionId = response.getFirstHeader("x-apilayer-transaction-id").getValue();
 
-            BigDecimal convertedAmount = conversionResult.getBigDecimal("result");
+            double convertedResult = conversionResult.getDouble("result");
+            BigDecimal convertedAmount = BigDecimal.valueOf(convertedResult);
 
             stringBuilder.append("Unique transaction identifier: ").append(transactionId)
                     .append("\nConverted amount: ").append(convertedAmount);
