@@ -15,7 +15,7 @@ To pull the Docker image of my Spring Boot application, open a terminal and run 
 1. you need to be logged into your docker desktop account and after that in the terminal type: docker login
 2. docker pull tsonevski/foreign-exchange
 3. docker run -p yourHost:8080 tsonevski/foreign-exchange
-3. Open http://localhost:YourPort/swagger-ui/index.html
+3. In this URL change YourPort  with the port you are using http://localhost:YourPort/swagger-ui/index.html
 
 ### Example
     if you are using port 8080 use this link ->   http://localhost:8080/swagger-ui/index.html
