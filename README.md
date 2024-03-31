@@ -1,5 +1,8 @@
 # Foreign_exchange
 
+## Tests
+If you run all the tests at once and some of them don't pass, run them individually and they will pass. I think this is caused by the third API for fetching the currency exchange rate.
+
 This repository: https://hub.docker.com/repository/docker/tsonevski/foreign-exchange/general contains the Dockerized version of my Spring Boot application. The application is packaged as a Docker image and can be pulled from Docker Hub.
 
 ## Prerequisites
